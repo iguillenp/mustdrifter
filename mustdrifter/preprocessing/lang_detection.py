@@ -24,9 +24,10 @@ def _get_lid():
 
 def detect_lang(text):
     global lid
-    logger.debug(f"Detecting language for text: {text}...")  # Log the beginning of the text for context
     if not isinstance(text, str) or len(text.strip()) < 5:
         return "und"
+    logger.debug(f"Detecting language for text: {text}...")  # Log the beginning of the text for context
+
     if lid is None: lid = _get_lid()
     label, prob = lid.predict(text.replace("\n", " "), k=1)
     logger.debug(f"Predicted label: {label}, probability: {prob}")
