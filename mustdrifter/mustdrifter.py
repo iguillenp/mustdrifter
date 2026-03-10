@@ -141,22 +141,20 @@ class MuSTDrifter:
             drift["kl_drift"]= kl_drift(reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_kl.json")
         if "log_drift" in metrics:
             drift["log_drift"]= log_likelihood_drift(reference_sample=reference_sample, test_sample=test_sample, filename=f"{filename}_log.json", K=self.K, n_jobs=self.n_jobs)
-
         return drift
 
-    def drift_analysis(self, reference_period, test_period, K=100):
-        results= {}
-
-        return results
-
-    def all_drift_analysis(self):
+    def calculate_all_drift(self):
         period_ids= self.df["period_id"].unique()
-        results= {}
+
         for i in range(len(period_ids)-1):
-            reference_period= period_ids[i]
-            test_period= period_ids[i+1]
-            results[f"{reference_period}_{test_period}"]= self.drift_analysis(reference_period, test_period, self.K)
-        return results
+            for e in range(len(period_ids)-1):
+                reference_period= period_ids[i]
+                test_period= period_ids[e]
+                
+                self.calculate_semantic_drift( reference_period=reference_period, test_period=test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"])
+                self.calculate_sintactic_drift(reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"])
+                self.calculate_lexical_drift(  reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"])
+                
     
     def _init_encoder(self, pretrained_model= "intfloat/multilingual-e5-large", tokenizer_max_len=512, device="cuda", batch_size=200):
         self.tokenizer=  TokenGenerator(pretrained_model, tokenizer_max_len=tokenizer_max_len ,batch_size=batch_size)
