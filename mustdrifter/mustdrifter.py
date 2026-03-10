@@ -113,7 +113,7 @@ class MuSTDrifter:
     def generate_embeddings(self):
         self.logger.info("Generating embeddings...")
         if self.encode is None:
-            self.logger("Encoder not initialized. Initializing now...")
+            self.logger.info("Encoder not initialized. Initializing now...")
             self._init_encoder()
             
         for period_id, documents in self.df.groupby("period_id"):
