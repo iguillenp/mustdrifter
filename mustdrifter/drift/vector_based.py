@@ -25,7 +25,7 @@ def run_mmd_permutation(
 ):
     os.system('taskset -p 0xffffffff %d' % os.getpid())
     
-    logger.info(f"Running MMD permutation {permutation}.")
+    logger.info(f"Running MMD permutation {permutation} in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
@@ -148,7 +148,7 @@ def run_cos_permutation(
     # Needed for parallel processing to ensure that all CPU cores are utilized effectively
     os.system('taskset -p 0xffffffff %d' % os.getpid())
     
-    logger.info(f"Running cosine permutation {permutation}.")
+    logger.info(f"Running cosine permutation {permutation} in PID {os.getpid()}.")
     rng = np.random.default_rng(seed=permutation)
     shuffled = rng.permutation(aggregated_samples)
 
