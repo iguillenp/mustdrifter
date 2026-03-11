@@ -45,7 +45,7 @@ def run_mmd_permutation(
     return int(permutation_drift_magnitude >= drift_magnitude)
 
 def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
-    logger.info("Running MMD drift detection...")
+    logger.info("Running MMD drift detection.")
     reference_sample_size= len(reference_sample)
     test_sample_size= len(test_sample)
     
