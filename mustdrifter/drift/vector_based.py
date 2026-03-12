@@ -69,7 +69,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     
     with open(filename, "w") as f:
         json.dump({}, f)
-        logger.debug(f"Initialized empty JSON file for MMD drift results: {filename}")
+        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
 
     reference_sample_size= len(reference_sample)
     test_sample_size= len(test_sample)
@@ -205,6 +205,9 @@ def run_cos_permutation(
 
 def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     logger.info("Running cosine drift detection.")
+    with open(filename, "w") as f:
+        json.dump({}, f)
+        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 

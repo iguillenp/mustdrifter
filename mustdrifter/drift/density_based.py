@@ -15,8 +15,10 @@ os.system("taskset -p 0xff %d" % os.getpid())
 
 
 def js_drift(reference_sample, test_sample, filename):
-    logger.info("Running JS drift detection...")
-    
+    logger.info("Running JS drift detection.")
+    with open(filename, "w") as f:
+        json.dump({}, f)
+        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
     
@@ -51,7 +53,10 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
         float: Total KL divergence sum.
     """
     
-    logger.info("Running KL drift detection...")
+    logger.info("Running KL drift detection.")
+    with open(filename, "w") as f:
+        json.dump({}, f)
+        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     p = np.asarray(reference_sample, dtype=np.float64).mean(axis=0)
     q = np.asarray(test_sample, dtype=np.float64).mean(axis=0)
 
@@ -142,7 +147,10 @@ def log_likelihood_drift(
     n_jobs=10,
     alpha=1e-12
 ):
-    logger.info("Running log likelihood drift detection...")
+    logger.info("Running log likelihood drift detection.")
+    with open(filename, "w") as f:
+        json.dump({}, f)
+        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 

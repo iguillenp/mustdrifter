@@ -8,8 +8,11 @@ logger = logging.getLogger(__name__)
 ## ------ KS drift ------ ##
 
 def ks_drift(reference_sample, test_sample, filename):
-    logger.info("Running KS drift detection...")
+    logger.info("Running KS drift detection.")
 
+    with open(filename, "w") as f:
+        json.dump({}, f)
+        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     n_dimensions= reference_sample.shape[-1]
     
     
