@@ -47,7 +47,7 @@ def pos_tags_to_df(pos_tags, doc_id):
 
 PIPELINES = {}
 
-def get_pipeline(lang):
+def get_pipeline(lang, device="cuda"):
     if lang == "und":
         return None
 
@@ -64,7 +64,7 @@ def get_pipeline(lang):
                 lang=lang,
                 processors="tokenize,pos",
                 tokenize_no_ssplit=True,
-                use_gpu=True,
+                device=device,
                 verbose=False,
                 model_dir=str(STANZA_DIR)
             )
@@ -74,7 +74,7 @@ def get_pipeline(lang):
         logger.debug(f"Stanza pipeline for language {lang} initialized: {PIPELINES[lang] is not None}")
     return PIPELINES[lang]
 
-def annotate_pos(dataset, dataset_name):   
+def annotate_pos(dataset, dataset_name, device="cuda"):   
     dataset["doc_id"]= dataset.index
     
     dataset["content"] = dataset["content"].astype(str).apply(remove_emojis)
@@ -85,7 +85,7 @@ def annotate_pos(dataset, dataset_name):
     annotations= []
     logger.debug("Annotating POS tags for each language group...")
     for lang, group_lang in dataset.groupby("lang"):
-        pos_tagger= get_pipeline(lang)
+        pos_tagger= get_pipeline(lang, device=device)
         if pos_tagger is None: continue
         tags= pos_tagger(group_lang["content"].tolist())
         tags_df= pos_tags_to_df(tags.to_dict(), group_lang["doc_id"].tolist() )

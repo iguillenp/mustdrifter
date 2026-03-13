@@ -12,13 +12,15 @@ from .drift import cos_drift, ks_drift, mmd_drift, js_drift, kl_drift, log_likel
 class MuSTDrifter:
     """ Multi-Source Temporal Drifter 
     """
-    def __init__(self, df, df_name, results_path, n_jobs=20, K=100):
+    def __init__(self, df, df_name, results_path, n_jobs=20, K=100, device="cuda"):
         self.df = df
         self.df_annotations= None
         self.df_name = df_name
         self.results_path = results_path
         self.encode= None
 
+        self.device= device
+        
         self.n_jobs= n_jobs
         self.K= K
         
@@ -73,7 +75,7 @@ class MuSTDrifter:
 
     def annotate_pos(self):
         self.logger.info("Starting POS annotation...")
-        self.df, self.df_annotations = annotate_pos(self.df, f"{self.pos_annotations_path}/dataset")
+        self.df, self.df_annotations = annotate_pos(self.df, f"{self.pos_annotations_path}/dataset", device=self.device)
         self.logger.info("POS annotation completed.")
     
     def load_pos_annotation(self):
