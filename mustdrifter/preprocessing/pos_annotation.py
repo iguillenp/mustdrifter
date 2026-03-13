@@ -68,7 +68,8 @@ def get_pipeline(lang):
                 verbose=False,
                 model_dir=STANZA_DIR
             )
-        except:
+        except Exception as e:
+            logger.error(f"Error initializing Stanza pipeline for language {lang}: {e}")
             PIPELINES[lang] = None
         logger.debug(f"Stanza pipeline for language {lang} initialized: {PIPELINES[lang] is not None}")
     return PIPELINES[lang]
