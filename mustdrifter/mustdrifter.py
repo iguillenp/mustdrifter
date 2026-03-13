@@ -48,7 +48,16 @@ class MuSTDrifter:
         os.makedirs(self.lexical_drift_path,       exist_ok=True)
 
         self.logger = logging.getLogger(__name__)
-    
+
+    def _init_encoder(self, pretrained_model= "intfloat/multilingual-e5-large", tokenizer_max_len=512, batch_size=200):
+        self.tokenizer=  TokenGenerator(pretrained_model, tokenizer_max_len=tokenizer_max_len ,batch_size=batch_size)
+        self.tokenize=   self.tokenizer.tokenize_texts
+
+        self.encoder=    EmbeddingsGenerator(pretrained_model, train_device=self.device, batch_size=batch_size)
+        self.encode=     self.encoder.generate_embeddings
+
+        self.logger.info(f"Encoder initialized with model {pretrained_model} on device {self.device}.")
+
     def load_embeddings(self, period_id):
         _path= f'{self.embeddings_path}/{period_id}.npy'
         with open(_path, 'rb') as f:
@@ -136,38 +145,6 @@ class MuSTDrifter:
         self.generate_pos_distributions()
         self.generate_embeddings()
 
-    def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"], rebase=False):
-        self.logger.info(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
-        reference_sample= self.load_embeddings(reference_period)
-        test_sample= self.load_embeddings(test_period)
-
-        filename=f"{self.semantic_drift_path}/{reference_period}_{test_period}"
-        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
-        
-    def calculate_sintactic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
-        self.logger.info(f"Calculating sintactic drift between {reference_period} and {test_period} using metrics: {metrics}")
-        reference_sample= self.load_pos_sintax(reference_period)
-        test_sample= self.load_pos_sintax(test_period)
-
-        filename=f"{self.sintax_drift_path}/{reference_period}_{test_period}"
-        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
-
-    def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
-        self.logger.info(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
-        reference_sample= self.load_pos_lexical(reference_period)
-        test_sample= self.load_pos_lexical(test_period)
-
-        filename=f"{self.lexical_drift_path}/{reference_period}_{test_period}"
-        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
-
-    def calculate_sintactic_ngram_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
-        self.logger.info(f"Calculating sintactic n-gram drift between {reference_period} and {test_period} using metrics: {metrics}")
-        reference_sample= self.load_pos_ngram(reference_period)
-        test_sample= self.load_pos_ngram(test_period)
-
-        filename=f"{self.sintax_drift_path}/ngram_{reference_period}_{test_period}"
-        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
-
     def calculate_drift(self, reference_sample, test_sample, filename, metrics, rebase=False):
         drift= {}
 
@@ -209,6 +186,38 @@ class MuSTDrifter:
                 self.logger.info(f"Log-likelihood drift result already exists at {_filename}. Skipping calculation.")
         return drift
 
+    def calculate_semantic_drift(self, reference_period, test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"], rebase=False):
+        self.logger.info(f"Calculating semantic drift between {reference_period} and {test_period} using metrics: {metrics}")
+        reference_sample= self.load_embeddings(reference_period)
+        test_sample= self.load_embeddings(test_period)
+
+        filename=f"{self.semantic_drift_path}/{reference_period}_{test_period}"
+        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
+        
+    def calculate_sintactic_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
+        self.logger.info(f"Calculating sintactic drift between {reference_period} and {test_period} using metrics: {metrics}")
+        reference_sample= self.load_pos_sintax(reference_period)
+        test_sample= self.load_pos_sintax(test_period)
+
+        filename=f"{self.sintax_drift_path}/{reference_period}_{test_period}"
+        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
+
+    def calculate_lexical_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
+        self.logger.info(f"Calculating lexical drift between {reference_period} and {test_period} using metrics: {metrics}")
+        reference_sample= self.load_pos_lexical(reference_period)
+        test_sample= self.load_pos_lexical(test_period)
+
+        filename=f"{self.lexical_drift_path}/{reference_period}_{test_period}"
+        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
+
+    def calculate_sintactic_ngram_drift(self, reference_period, test_period, metrics=["js_drift", "kl_drift", "log_drift"], rebase=False):
+        self.logger.info(f"Calculating sintactic n-gram drift between {reference_period} and {test_period} using metrics: {metrics}")
+        reference_sample= self.load_pos_ngram(reference_period)
+        test_sample= self.load_pos_ngram(test_period)
+
+        filename=f"{self.sintax_drift_path}/ngram_{reference_period}_{test_period}"
+        return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
+
     def calculate_all_drift(self):
         self.logger.info("Calculating drift for all period pairs...")
 
@@ -227,11 +236,3 @@ class MuSTDrifter:
 
         self.logger.info("Drift calculation completed for all period pairs.")
 
-    def _init_encoder(self, pretrained_model= "intfloat/multilingual-e5-large", tokenizer_max_len=512, batch_size=200):
-        self.tokenizer=  TokenGenerator(pretrained_model, tokenizer_max_len=tokenizer_max_len ,batch_size=batch_size)
-        self.tokenize=   self.tokenizer.tokenize_texts
-
-        self.encoder=    EmbeddingsGenerator(pretrained_model, train_device=self.device, batch_size=batch_size)
-        self.encode=     self.encoder.generate_embeddings
-
-        self.logger.info(f"Encoder initialized with model {pretrained_model} on device {self.device}.")
