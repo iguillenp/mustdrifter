@@ -36,6 +36,7 @@ def pos_tags_to_df(pos_tags, doc_id):
                 "id": token.get("id"),
                 "text": token.get("text"),
                 "upos": token.get("upos"),
+                "lemma": token.get("lemma"),
                 "xpos": token.get("xpos"),
                 "feats": token.get("feats"),
                 "start_char": token.get("start_char"),

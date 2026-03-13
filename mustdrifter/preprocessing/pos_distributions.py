@@ -59,6 +59,8 @@ def get_pos_ngram_distribution(df, n_min=2, n_max=4):
 
 
 def get_lexical_distribution(df_annotations, docs_df, allowed_upos=["NOUN", "VERB", "ADV", "ADJ"]):
+    lexical_column= "lemma" # can be changed to "text" if we want to use the original word forms instead of lemmas
+    
     logger.debug("Calculating lexical distribution...")
     df = df_annotations.merge(
         docs_df[["doc_id", "period_id"]],
@@ -67,13 +69,13 @@ def get_lexical_distribution(df_annotations, docs_df, allowed_upos=["NOUN", "VER
     )
 
     df = df[df["upos"].isin(allowed_upos)].copy()
-    df["text"] = df["text"].astype(str)
+    df[lexical_column] = df[lexical_column].astype(str)
     logger.debug(f"Filtered annotations to allowed UPOS tags: {allowed_upos}. Remaining rows: {len(df)}.")
     
-    vocabulary = np.sort(df["text"].dropna().unique())
+    vocabulary = np.sort(df[lexical_column].dropna().unique())
 
     counts = (
-        df.groupby(["period_id", "text"], observed=True)
+        df.groupby(["period_id", lexical_column], observed=True)
         .size()
         .reset_index(name="freq")
     )
@@ -81,7 +83,7 @@ def get_lexical_distribution(df_annotations, docs_df, allowed_upos=["NOUN", "VER
 
     lexical_dist = (
         counts
-        .pivot(index="period_id", columns="text", values="freq")
+        .pivot(index="period_id", columns=lexical_column, values="freq")
         .reindex(columns=vocabulary, fill_value=0)
         .fillna(0)
         .sort_index()
