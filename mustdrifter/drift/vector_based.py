@@ -10,6 +10,8 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
+import gc
+
 # Needed for parallel processing to ensure that all CPU cores are utilized effectively
 # os.system("taskset -p 0xff %d" % os.getpid())
 
@@ -62,7 +64,7 @@ def run_mmd_permutation(
     logger.debug(f"Permutation {permutation}: Calculated MMD drift magnitude: {permutation_drift_magnitude}")
     
     del shuffled, permutation_reference_sample, permutation_test_sample, permutation_detector, result
-    
+    gc.collect()
     return int(permutation_drift_magnitude >= drift_magnitude)
 
 def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
@@ -134,7 +136,7 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
     
     logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
     
-    with Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs) as parallel:
+    with Parallel(n_jobs=n_jobs, max_nbytes="1M", pre_dispatch= n_jobs, backend="loky", verbose=n_jobs, mmap_mode="r") as parallel:
         for batch_start in range(permutation_range.start, permutation_range.stop, n_jobs):
             batch_end = min(batch_start + n_jobs, permutation_range.stop)
             
