@@ -60,7 +60,7 @@ def get_pipeline(lang, device="cuda"):
 
             if not os.path.exists(model_path):
                 logger.debug(f"Downloading and initializing Stanza pipeline for language: {lang}")
-                stanza.download(lang, processors="tokenize,pos", verbose=False, model_dir=str(STANZA_DIR))
+                stanza.download(lang, processors="tokenize,pos,lemma", verbose=False, model_dir=str(STANZA_DIR))
                 
             PIPELINES[lang] = stanza.Pipeline(
                 lang=lang,
