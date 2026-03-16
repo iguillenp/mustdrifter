@@ -285,10 +285,10 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
 
 
 ## ------ Cos drift ------ ##
-def build_cos_bak_data(results_buffer, drift_magnitude):
+def build_cos_bak_data(permutation_test, drift_magnitude):
     return {
         "magnitude": drift_magnitude,
-        "permutation_test": results_buffer
+        "permutation_test": permutation_test
     }
 
 def median_embedding(embeddings):
