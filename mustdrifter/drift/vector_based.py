@@ -97,6 +97,9 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
 
         ### For measuring the drift significance
         permutation_test= permutation_bak["permutation_test"]
+        if len(permutation_test) != K:
+            logger.warning(f"Backup file has {len(permutation_test)} permutations, expected {K}. Will recompute all permutations.")
+            permutation_test = [None] * K
         # permutation_range= range(permutation_bak["permutation"]+1, K)
 
     else:
