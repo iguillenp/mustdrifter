@@ -134,6 +134,16 @@ def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_test= []
         permutation_range= range(K)
     
+    bak_data = {
+            "magnitude": drift_magnitude,
+            "permutation": -1,
+            "permutation_test": permutation_test,
+            "sigma_median": sigma_median
+        }
+
+    with open(bak_filename, "w") as f:
+        json.dump(bak_data, f)
+
     logger.info(f"Running {K} permutations for MMD drift significance testing with {n_jobs} parallel jobs...")
     
     with Parallel(n_jobs=n_jobs, max_nbytes="1M", pre_dispatch= n_jobs, backend="loky", verbose=n_jobs, mmap_mode="r") as parallel:
@@ -278,6 +288,15 @@ def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
         permutation_test = []
         permutation_range = range(K)
 
+    bak_data = {
+            "magnitude": drift_magnitude,
+            "permutation": -1,
+            "permutation_test": permutation_test,
+        }
+
+    with open(bak_filename, "w") as f:
+        json.dump(bak_data, f)
+        
     logger.info(f"Running {K} permutations for cosine drift significance testing with {n_jobs} parallel jobs...")
     
     with Parallel(n_jobs=n_jobs, backend="loky", verbose=n_jobs) as parallel:
