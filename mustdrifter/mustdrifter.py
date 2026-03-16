@@ -218,7 +218,7 @@ class MuSTDrifter:
         filename=f"{self.sintax_drift_path}/ngram_{reference_period}_{test_period}"
         return self.calculate_drift(reference_sample=reference_sample, test_sample=test_sample, filename=filename, metrics=metrics, rebase=rebase)
 
-    def calculate_all_drift(self, drift_dimensions=["semantic", "sintactic", "lexical"], rebase=False):
+    def calculate_all_drift(self, drift_dimensions=["semantic", "sintactic", "lexical"], metrics= None,rebase=False):
         self.logger.info("Calculating drift for all period pairs...")
 
         period_ids= self.df["period_id"].unique()
@@ -231,11 +231,25 @@ class MuSTDrifter:
                 self.logger.info(f"Starting drift calculation for period pair: {reference_period} vs {test_period}")
 
                 if "semantics" in drift_dimensions:
-                    self.calculate_semantic_drift( reference_period=reference_period, test_period=test_period, metrics=["cos_drift", "mmd_drift", "ks_drift"],           rebase=rebase)
+                    if metrics is None:
+                        _metrics= ["cos_drift", "mmd_drift", "ks_drift"]
+                    else:
+                        _metrics= metrics
+                    self.calculate_semantic_drift( reference_period=reference_period, test_period=test_period, metrics=_metrics,           rebase=rebase)
                 if "sintactic" in drift_dimensions:
-                    self.calculate_sintactic_drift(reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"], rebase=rebase)
+                    if metrics is None:
+                        _metrics= ["js_drift", "kl_drift", "log_drift"]
+                    else:
+                        _metrics= metrics
+                        
+                    self.calculate_sintactic_drift(reference_period=reference_period, test_period=test_period, metrics=_metrics, rebase=rebase)
                 if "lexical" in drift_dimensions:
-                    self.calculate_lexical_drift(  reference_period=reference_period, test_period=test_period, metrics=["js_drift", "kl_drift", "log_likelihood_drift"], rebase=rebase)
+                    if metrics is None:
+                        _metrics= ["js_drift", "kl_drift", "log_drift"]
+                    else:
+                        _metrics= metrics
+                        
+                    self.calculate_lexical_drift(  reference_period=reference_period, test_period=test_period, metrics=_metrics, rebase=rebase)
 
         self.logger.info("Drift calculation completed for all period pairs.")
 
