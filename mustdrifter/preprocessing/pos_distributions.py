@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 
 
+
+from itertools import permutations
 import logging
 logger = logging.getLogger(__name__)
 
@@ -98,3 +100,232 @@ def get_lexical_distribution(df_annotations, docs_df, allowed_upos=["NOUN", "VER
     logger.debug("Reordered columns in lexical distribution DataFrame.")
 
     return lexical_dist
+
+
+def _rule_exists_in_document(
+    pos_sequence: list[str],
+    rule_tags: tuple[str, ...]
+) -> int:
+    current_pos = 0
+
+    for rule_tag in rule_tags:
+        found = False
+
+        while current_pos < len(pos_sequence):
+            if pos_sequence[current_pos] == rule_tag:
+                found = True
+                current_pos += 1
+                break
+            current_pos += 1
+
+        if not found:
+            return 0
+
+    return 1
+    
+def get_syntactic_content_distribution(
+    df_annotations,
+    docs_df,
+    allowed_upos=["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]
+):
+    """
+    Compute the probability distribution of syntactic content rules by period.
+
+    A rule is defined as any permutation of the UPOS tags in `allowed_upos`.
+    For each document, a rule is considered present if it appears as an
+    ordered non-contiguous subsequence in the document's UPOS sequence.
+
+    Parameters
+    ----------
+    df_annotations : pd.DataFrame
+        DataFrame with at least:
+        - doc_id
+        - id
+        - upos
+
+    docs_df : pd.DataFrame
+        DataFrame with at least:
+        - doc_id
+        - period_id
+
+    allowed_upos : list[str] | None, optional
+        UPOS tags used to build the rules. If None, defaults to:
+        ["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]
+
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with:
+        - first column: period_id
+        - one column per rule, sorted alphabetically
+        - values: probability distribution over rules within each period
+    """
+
+    df = df_annotations.merge(
+        docs_df[["doc_id", "period_id"]],
+        on="doc_id",
+        how="left"
+    )
+
+    df = df[df["upos"].isin(allowed_upos)].copy()
+    df = df.dropna(subset=["period_id"]).copy()
+    df = df.sort_values(["doc_id", "id"])
+
+    rules = sorted(["+".join(rule) for rule in permutations(allowed_upos)])
+    rules_split = {rule: tuple(rule.split("+")) for rule in rules}
+
+    if df.empty:
+        return pd.DataFrame(columns=["period_id"] + rules)
+
+    doc_period = (
+        df[["doc_id", "period_id"]]
+        .drop_duplicates(subset=["doc_id"])
+        .set_index("doc_id")["period_id"]
+    )
+
+    doc_pos = df.groupby("doc_id")["upos"].apply(list)
+    target_tag_set = set(allowed_upos)
+
+
+
+    rows = []
+
+    for doc_id, pos_seq in doc_pos.items():
+        row = {
+            "doc_id": doc_id,
+            "period_id": doc_period.loc[doc_id]
+        }
+
+        if not target_tag_set.issubset(set(pos_seq)):
+            for rule in rules:
+                row[rule] = 0
+            rows.append(row)
+            continue
+
+        for rule, rule_tags in rules_split.items():
+            row[rule] = _rule_exists_in_document(pos_seq, rule_tags)
+
+        rows.append(row)
+
+    df_doc_rules = pd.DataFrame(rows)
+
+    df_period_counts = (
+        df_doc_rules
+        .drop(columns=["doc_id"])
+        .groupby("period_id", as_index=False)
+        .sum()
+    )
+
+    rule_totals = df_period_counts[rules].sum(axis=1)
+
+    df_period_probs = df_period_counts.copy()
+    df_period_probs[rules] = (
+        df_period_probs[rules]
+        .div(rule_totals.replace(0, pd.NA), axis=0)
+        .fillna(0.0)
+    )
+
+    df_period_probs = df_period_probs[["period_id"] + rules]
+
+    return df_period_probs
+
+
+def _rule_exists_contiguous(pos_sequence, rule_tags):
+    """
+    Check if rule_tags appears as a contiguous subsequence.
+    """
+    n = len(rule_tags)
+    L = len(pos_sequence)
+
+    for i in range(L - n + 1):
+        if tuple(pos_sequence[i:i+n]) == rule_tags:
+            return 1
+
+    return 0
+
+
+def get_syntactic_style_dimension(
+    df_annotations,
+    docs_df,
+    allowed_upos=["NOUN", "PRON", "VERB", "ADV", "ADJ", "DET"]
+):
+    logger.debug("Calculating syntactic style dimension...")
+
+    df = df_annotations.merge(
+        docs_df[["doc_id", "period_id"]],
+        on="doc_id",
+        how="left"
+    )
+
+    df = df[df["upos"].isin(allowed_upos)].copy()
+    logger.debug(
+        f"Filtered annotations to allowed UPOS tags: {allowed_upos}. Remaining rows: {len(df)}."
+    )
+
+    if df.empty:
+        logger.debug("No rows remaining after filtering. Returning empty DataFrame.")
+        return pd.DataFrame(columns=["period_id"])
+
+    df = df.sort_values(["doc_id", "id"])
+    logger.debug("Sorted annotations by doc_id and id.")
+
+    rules = np.sort(["+".join(rule) for rule in permutations(allowed_upos)])
+    logger.debug(f"Generated {len(rules)} syntactic style rules.")
+
+    doc_period = (
+        df[["doc_id", "period_id"]]
+        .drop_duplicates(subset=["doc_id"])
+        .set_index("doc_id")["period_id"]
+    )
+
+    doc_pos = df.groupby("doc_id", observed=True)["upos"].apply(list)
+    logger.debug("Built UPOS sequences for each doc_id.")
+
+    rules_split = {rule: tuple(rule.split("+")) for rule in rules}
+
+
+    rows = []
+
+    for doc_id, pos_seq in doc_pos.items():
+        row = {
+            "doc_id": doc_id,
+            "period_id": doc_period.loc[doc_id]
+        }
+
+        if len(pos_seq) < len(allowed_upos):
+            for rule in rules:
+                row[rule] = 0
+            rows.append(row)
+            continue
+
+        for rule, rule_tags in rules_split.items():
+            row[rule] = _rule_exists_contiguous(pos_seq, rule_tags)
+
+        rows.append(row)
+
+    logger.debug("Built document-level contiguous rule matrix.")
+
+    doc_rule_df = pd.DataFrame(rows)
+
+    syntactic_style_dist = (
+        doc_rule_df
+        .drop(columns=["doc_id"])
+        .groupby("period_id", observed=True)
+        .sum()
+        .reindex(columns=rules, fill_value=0)
+        .fillna(0)
+        .sort_index()
+        .pipe(lambda x: x.div(x.sum(axis=1), axis=0))
+        .fillna(0.0)
+        .reset_index()
+    )
+
+    logger.debug("Calculated syntactic style distribution and normalized by row sums.")
+
+    syntactic_style_dist.columns.name = None
+    cols = ["period_id"] + sorted(c for c in syntactic_style_dist.columns if c != "period_id")
+    syntactic_style_dist = syntactic_style_dist[cols]
+
+    logger.debug("Reordered columns in syntactic style DataFrame.")
+
+    return syntactic_style_dist
