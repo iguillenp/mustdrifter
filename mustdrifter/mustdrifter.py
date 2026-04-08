@@ -215,34 +215,6 @@ class MuSTDrifter:
         self.generate_thematic_dimension()
     ###
 
-    # def generate_pos_distributions(self):
-    #     self.logger.info("Generating POS distributions...")
-
-    #     if self.pos_annotations is None:
-    #         raise ValueError("POS annotations not found. Please run _annotate_pos() first.")
-
-    #     self.df_pos_distribution= get_pos_distribution(self.pos_annotations)
-    #     self.logger.info("POS distribution generated.")
-
-    #     self.df_pos_ngram_distribution= get_pos_ngram_distribution(self.pos_annotations)
-    #     self.logger.info("POS n-gram distribution generated.")
-
-    #     self.df_lexical_distribution= get_lexical_distribution(self.pos_annotations, self.df)
-    #     self.logger.info("Lexical distribution generated.")
-
-    #     export_pos_annotations(self.df, self.df_pos_distribution, filename_path=self.pos_syntax_path)
-    #     self.logger.info("POS annotations exported for syntax.")
-
-    #     # export_pos_annotations_relevant(self.df, self.df_pos_distribution, filename_path=self.pos_syntax_relevant_path)
-    #     # self.logger.info("POS annotations exported for relevant syntax.")
-
-    #     export_pos_ngrams(self.df, self.df_pos_ngram_distribution, filename_path=self.pos_ngram_path, observed_pos=None)
-    #     self.logger.info("POS n-grams exported.")
-
-    #     export_pos_lexical(self.df_lexical_distribution, filename_path=self.pos_lexical_path)
-    #     self.logger.info("Lexical features exported.")
-
-
     ### Drift calculation
     def _calculate_drift(self, reference_sample, test_sample, filename, metrics, rebase=None):
         drift= {}
