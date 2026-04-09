@@ -16,9 +16,10 @@ import os
 
 def js_drift(reference_sample, test_sample, filename):
     logger.info("Running JS drift detection.")
-    with open(filename, "w") as f:
-        json.dump({}, f)
-        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
+    if filename is not None:
+        with open(filename, "w") as f:
+            json.dump({}, f)
+            logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 
@@ -30,12 +31,12 @@ def js_drift(reference_sample, test_sample, filename):
     magnitude = float(
         jensenshannon(reference_distribution, test_distribution, base=2.0)
     )
+    if filename is not None:
+        with open(filename, "w") as f:
+            json.dump({"magnitude": magnitude}, f)
 
-    with open(filename, "w") as f:
-        json.dump({"magnitude": magnitude}, f)
-
-    logger.info(f"JS drift magnitude ({magnitude}) saved to {filename}")
-    
+        logger.info(f"JS drift magnitude ({magnitude}) saved to {filename}")
+        
     return magnitude
 
 
@@ -54,9 +55,10 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     """
     
     logger.info("Running KL drift detection.")
-    with open(filename, "w") as f:
-        json.dump({}, f)
-        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
+    if filename is not None:
+        with open(filename, "w") as f:
+            json.dump({}, f)
+            logger.debug(f"Initialized empty JSON file for drift results: {filename}")
 
     p = np.asarray(reference_sample, dtype=np.float64).mean(axis=0)
     q = np.asarray(test_sample, dtype=np.float64).mean(axis=0)
@@ -67,11 +69,11 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     logger.info("Computed mean distributions and applied smoothing for KL divergence.")
     
     magnitude = float(np.sum(kl_div(p, q)))
+    if filename is not None:
+        with open(filename, "w") as f:
+            json.dump({"magnitude": magnitude}, f)
 
-    with open(filename, "w") as f:
-        json.dump({"magnitude": magnitude}, f)
-
-    logger.info(f"KL drift magnitude ({magnitude}) saved to {filename}")
+        logger.info(f"KL drift magnitude ({magnitude}) saved to {filename}")
     return magnitude
 
 
@@ -149,9 +151,10 @@ def log_likelihood_drift(
     alpha=1e-12
 ):
     logger.info("Running log likelihood drift detection.")
-    with open(filename, "w") as f:
-        json.dump({}, f)
-        logger.debug(f"Initialized empty JSON file for drift results: {filename}")
+    if filename is not None:
+        with open(filename, "w") as f:
+            json.dump({}, f)
+            logger.debug(f"Initialized empty JSON file for drift results: {filename}")
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 
@@ -179,9 +182,9 @@ def log_likelihood_drift(
     logger.info(f"Completed {K} permutations for log likelihood drift detection.")
 
     p_value = (1 + sum(m >= drift_magnitude for m in permutation_magnitudes)) / (K + 1)
-
-    with open(filename, "w") as f:
-        json.dump({"magnitude": drift_magnitude, "p_value": p_value}, f)
-    logger.info(f"Log likelihood drift results saved to {filename}")
+    if filename is not None:
+        with open(filename, "w") as f:
+            json.dump({"magnitude": drift_magnitude, "p_value": p_value}, f)
+        logger.info(f"Log likelihood drift results saved to {filename}")
     
     return drift_magnitude, p_value

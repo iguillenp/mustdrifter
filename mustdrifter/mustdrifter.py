@@ -334,7 +334,7 @@ class MuSTDrifter:
             drift_result = self._calculate_drift(
                 reference_sample=sub_distribution["reference_distribution"],
                 test_sample=sub_distribution["test_distribution"],
-                filename=filename,
+                filename=None,
                 metrics=metrics,
                 rebase=rebase,
             )
