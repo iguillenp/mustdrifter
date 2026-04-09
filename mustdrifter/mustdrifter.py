@@ -322,7 +322,6 @@ class MuSTDrifter:
         
         metric_values = {metric: [] for metric in metrics}
         base_path=f"{self.syntax_style_drift_path}/{reference_period}_{test_period}"
-        os.makedirs(base_path, exist_ok=True)
         
         for sub_distribution in context_distributions:
             sub_distribution_context = sub_distribution["context"]
@@ -346,7 +345,11 @@ class MuSTDrifter:
         results= {}
         for metric, values in metric_values.items():
             drift={
-                "magnitude": float(np.mean(values["magnitude"])) if values["magnitude"] else np.nan,
+                "magnitude_min":    float(np.min(values["magnitude"])) if values["magnitude"] else np.nan,
+                "magnitude_max":    float(np.max(values["magnitude"])) if values["magnitude"] else np.nan,
+                "magnitude_median": float(np.median(values["magnitude"])) if values["magnitude"] else np.nan,
+                "magnitude_mean":   float(np.mean(values["magnitude"])) if values["magnitude"] else np.nan,
+                "magnitude_std":    float(np.std(values["magnitude"])) if values["magnitude"] else np.nan,
                 #"p_value": float(np.mean(values["p_value"])) if values["p_value"] else np.nan,
             }
             filename= f"{base_path}_{metric.replace('_drift', '')}.json"
