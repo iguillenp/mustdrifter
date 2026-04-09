@@ -161,6 +161,7 @@ def get_syntactic_content_distribution(
         - one column per rule, sorted alphabetically
         - values: probability distribution over rules within each period
     """
+    logger.debug("Calculating syntactic content dimension...")
 
     df = df_annotations.merge(
         docs_df[["doc_id", "period_id"]],
