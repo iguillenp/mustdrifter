@@ -208,13 +208,25 @@ class MuSTDrifter:
         self._export_dimension_annotations(self.thematic_dimension, self.thematic_path)
         self.logger.info("Thematic features exported.")
 
-    def generate_drift_dimensions(self):
-        self.logger.info("Generating all dimensions for drift detection...")        
-        self.generate_syntax_content_dimension()
-        self.generate_syntax_style_dimension()
-        self.generate_lexical_dimension()
-        self.generate_semantic_dimension()
-        self.generate_thematic_dimension()
+    def generate_drift_dimensions(self, dimensions=["semantic", "syntactic_content", "syntactic_style", "lexical", "thematic"]):
+        self.logger.info(f"Generating {dimensions} dimensions for drift detection...")
+        
+
+        if "syntactic_content" in dimensions and self.syntax_content_dimension is None:
+             self.generate_syntax_content_dimension()
+             
+        if "syntactic_style" in dimensions and self.syntax_style_dimension is None:
+             self.generate_syntax_style_dimension()
+             
+        if "lexical" in dimensions and self.lexical_dimension is None:
+            self.generate_lexical_dimension()
+            
+        if "semantic" in dimensions and self.semantic_dimension is None:
+             self.generate_semantic_dimension()
+             
+        if "thematic" in dimensions and self.thematic_dimension is None:
+                self.generate_thematic_dimension()
+
     ###
 
     ### Drift calculation
