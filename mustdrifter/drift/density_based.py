@@ -25,13 +25,10 @@ def js_drift(reference_sample, test_sample, filename):
     reference_sample = np.asarray(reference_sample, dtype=np.float64)
     test_sample = np.asarray(test_sample, dtype=np.float64)
 
-    reference_distribution = reference_sample.mean(axis=0)
-    test_distribution = test_sample.mean(axis=0)
-
     logger.info("Computed mean distributions for reference and test samples.")
 
     magnitude = float(
-        jensenshannon(reference_distribution, test_distribution, base=2.0)
+        jensenshannon(reference_sample, test_sample, base=2.0)
     )
     result = {"magnitude": magnitude}
 
