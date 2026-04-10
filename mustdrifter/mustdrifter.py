@@ -353,24 +353,18 @@ class MuSTDrifter:
             for metric in metrics:
                 if metric not in drift_result:
                     continue
-
-                value = drift_result[metric]
-
-                magnitude = value.get("magnitude", np.nan)
-
-                if magnitude is not None and np.isfinite(magnitude):
-                    metric_values[metric].append(float(magnitude))
+                metric_values[metric].append(drift_result[metric])
 
         results= {}
         for metric, values in metric_values.items():
-            self.logger.info(f"Aggregating results for metric {metric} with {len(values)} valid sub-distributions. Values: {value.items()}") 
+            magnitudes = [v["magnitude"] for v in values if v.get("magnitude") is not None and np.isfinite(v["magnitude"])]
             drift={
-                "magnitude":        float(np.mean(values[metric])) if values[metric] else np.nan,
-                "magnitude_min":    float(np.min(values[metric])) if values[metric] else np.nan,
-                "magnitude_max":    float(np.max(values[metric])) if values[metric] else np.nan,
-                "magnitude_median": float(np.median(values[metric])) if values[metric] else np.nan,
-                "magnitude_mean":   float(np.mean(values[metric])) if values[metric] else np.nan,
-                "magnitude_std":    float(np.std(values[metric])) if values[metric] else np.nan,
+                "magnitude":        float(np.mean(magnitudes)) if magnitudes else np.nan,
+                "magnitude_min":    float(np.min(magnitudes)) if magnitudes else np.nan,
+                "magnitude_max":    float(np.max(magnitudes)) if magnitudes else np.nan,
+                "magnitude_median": float(np.median(magnitudes)) if magnitudes else np.nan,
+                "magnitude_mean":   float(np.mean(magnitudes)) if magnitudes else np.nan,
+                "magnitude_std":    float(np.std(magnitudes)) if magnitudes else np.nan,
                 #"p_value": float(np.mean(values["p_value"])) if values["p_value"] else np.nan,
             }
             filename= f"{base_path}_{metric.replace('_drift', '')}.json"
