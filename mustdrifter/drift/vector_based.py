@@ -76,6 +76,8 @@ def run_mmd_permutation(
     return int(permutation_drift_magnitude >= drift_magnitude)
 
 def mmd_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
+    if filename=="": filename=None
+
     logger.info("Running MMD drift detection.")
     
     with open(filename, "w") as f:
@@ -241,6 +243,8 @@ def run_cos_permutation(
 
 
 def cos_drift(reference_sample, test_sample, filename, K=100, n_jobs=10):
+    if filename=="": filename=None
+
     logger.info("Running cosine drift detection.")
     with open(filename, "w") as f:
         json.dump({}, f)

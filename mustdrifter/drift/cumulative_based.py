@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 ## ------ KS drift ------ ##
 
 def ks_drift(reference_sample, test_sample, filename):
+    if filename=="": filename=None
     logger.info("Running KS drift detection.")
 
     with open(filename, "w") as f:

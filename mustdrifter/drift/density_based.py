@@ -15,6 +15,8 @@ import os
 
 
 def js_drift(reference_sample, test_sample, filename):
+    if filename=="": filename=None
+
     logger.info("Running JS drift detection.")
     if filename is not None:
         with open(filename, "w") as f:
@@ -55,7 +57,8 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
     Returns:
         float: Total KL divergence sum.
     """
-    
+    if filename=="": filename=None
+
     logger.info("Running KL drift detection.")
     if filename is not None:
         with open(filename, "w") as f:
@@ -152,6 +155,8 @@ def log_likelihood_drift(
     n_jobs=10,
     alpha=1e-12
 ):
+    if filename=="": filename=None
+
     logger.info("Running log likelihood drift detection.")
     if filename is not None:
         with open(filename, "w") as f:
