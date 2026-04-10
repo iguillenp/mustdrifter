@@ -266,7 +266,7 @@ def get_syntactic_style_sub_distributions(
     reference_sample,
     test_sample,
     dimensions,
-    shared_contexts_only=False,
+    shared_contexts_only=True,
 ):
     pattern = re.compile(r"^P\((.+)\|(.+)\)$")
 
@@ -281,18 +281,32 @@ def get_syntactic_style_sub_distributions(
         next_upos = match.group(1)
         context = match.group(2)
 
-        if context not in reference_grouped:
-            reference_grouped[context] = {}
-        if context not in test_grouped:
-            test_grouped[context] = {}
+        # if context not in reference_grouped:
+        #     reference_grouped[context] = {}
+        # if context not in test_grouped:
+        #     test_grouped[context] = {}
 
-        reference_grouped[context][next_upos] = float(reference_sample[int(idx)])
-        test_grouped[context][next_upos] = float(test_sample[int(idx)])
+        # reference_grouped[context][next_upos] = float(reference_sample[int(idx)])
+        # test_grouped[context][next_upos] = float(test_sample[int(idx)])
+        
+        ref_value = float(reference_sample[int(idx)])
+        test_value = float(test_sample[int(idx)])
+
+        if ref_value > 0.0:
+            if context not in reference_grouped:
+                reference_grouped[context] = {}
+            reference_grouped[context][next_upos] = ref_value
+
+        if test_value > 0.0:
+            if context not in test_grouped:
+                test_grouped[context] = {}
+            test_grouped[context][next_upos] = test_value
 
     if shared_contexts_only:
         contexts = sorted(set(reference_grouped).intersection(set(test_grouped)))
     else:
         contexts = sorted(set(reference_grouped).union(set(test_grouped)))
+        
 
     distributions = []
 

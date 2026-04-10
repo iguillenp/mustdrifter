@@ -319,14 +319,14 @@ class MuSTDrifter:
         context_distributions= get_syntactic_style_sub_distributions(reference_sample=reference_sample,
                                                                      test_sample=test_sample,
                                                                      dimensions=dimensions)
-        
+
         metric_values = {metric: [] for metric in metrics}
         base_path=f"{self.syntax_style_drift_path}/{reference_period}_{test_period}"
-        
+
         for sub_distribution in context_distributions:
             ref_dist = np.asarray(sub_distribution["reference_distribution"], dtype=np.float64)
             test_dist = np.asarray(sub_distribution["test_distribution"], dtype=np.float64)
-
+            
             # Filtrar contextos degenerados
             if ref_dist.size < 2 or test_dist.size < 2:
                 continue
@@ -365,7 +365,7 @@ class MuSTDrifter:
                 "magnitude_median": float(np.median(magnitudes)) if magnitudes else np.nan,
                 "magnitude_mean":   float(np.mean(magnitudes)) if magnitudes else np.nan,
                 "magnitude_std":    float(np.std(magnitudes)) if magnitudes else np.nan,
-                #"p_value": float(np.mean(values["p_value"])) if values["p_value"] else np.nan,
+                # "p_value": float(np.mean(values["p_value"])) if values["p_value"] else np.nan,
             }
             filename= f"{base_path}_{metric.replace('_drift', '')}.json"
             with open(filename, "w") as f:
