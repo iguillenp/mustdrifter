@@ -62,8 +62,8 @@ def kl_drift(reference_sample, test_sample, filename, eps=1e-12):
             json.dump({}, f)
             logger.debug(f"Initialized empty JSON file for drift results: {filename}")
 
-    p = np.asarray(reference_sample, dtype=np.float64).mean(axis=0)
-    q = np.asarray(test_sample, dtype=np.float64).mean(axis=0)
+    p = np.asarray(reference_sample, dtype=np.float64)
+    q = np.asarray(test_sample, dtype=np.float64)
 
     p = (p + eps) / (p + eps).sum()
     q = (q + eps) / (q + eps).sum()
