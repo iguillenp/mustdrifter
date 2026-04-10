@@ -345,12 +345,12 @@ class MuSTDrifter:
         results= {}
         for metric, values in metric_values.items():
             drift={
-                "magnitude":        float(np.mean(values)) if values else np.nan,
-                "magnitude_min":    float(np.min(values)) if values else np.nan,
-                "magnitude_max":    float(np.max(values)) if values else np.nan,
-                "magnitude_median": float(np.median(values)) if values else np.nan,
-                "magnitude_mean":   float(np.mean(values)) if values else np.nan,
-                "magnitude_std":    float(np.std(values)) if values else np.nan,
+                "magnitude":        float(np.mean(values[metric])) if values[metric] else np.nan,
+                "magnitude_min":    float(np.min(values[metric])) if values[metric] else np.nan,
+                "magnitude_max":    float(np.max(values[metric])) if values[metric] else np.nan,
+                "magnitude_median": float(np.median(values[metric])) if values[metric] else np.nan,
+                "magnitude_mean":   float(np.mean(values[metric])) if values[metric] else np.nan,
+                "magnitude_std":    float(np.std(values[metric])) if values[metric] else np.nan,
                 #"p_value": float(np.mean(values["p_value"])) if values["p_value"] else np.nan,
             }
             filename= f"{base_path}_{metric.replace('_drift', '')}.json"
