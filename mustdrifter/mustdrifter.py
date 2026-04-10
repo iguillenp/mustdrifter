@@ -324,29 +324,45 @@ class MuSTDrifter:
         base_path=f"{self.syntax_style_drift_path}/{reference_period}_{test_period}"
         
         for sub_distribution in context_distributions:
+            ref_dist = np.asarray(sub_distribution["reference_distribution"], dtype=np.float64)
+            test_dist = np.asarray(sub_distribution["test_distribution"], dtype=np.float64)
+
+            # Filtrar contextos degenerados
+            if ref_dist.size < 2 or test_dist.size < 2:
+                continue
+
+            if not np.isfinite(ref_dist).all() or not np.isfinite(test_dist).all():
+                continue
+
+            if ref_dist.sum() <= 0.0 or test_dist.sum() <= 0.0:
+                continue
+
             sub_distribution_context = sub_distribution["context"]
 
             sub_distribution_context = re.sub(r"[^A-Za-z0-9_\-+]", "_", sub_distribution_context)
-
             filename=f"{base_path}/{sub_distribution_context}"
 
             drift_result = self._calculate_drift(
-                reference_sample=sub_distribution["reference_distribution"],
-                test_sample=sub_distribution["test_distribution"],
+                reference_sample=ref_dist,
+                test_sample=test_dist,
                 filename=None,
                 metrics=metrics,
                 rebase=rebase,
             )
 
             for metric in metrics:
-                if metric in drift_result:
-                    metric_values[metric].append(drift_result[metric])
-        
+                if metric not in drift_result:
+                    continue
+
+                value = drift_result[metric]
+
+                magnitude = value.get("magnitude", np.nan)
+
+                if magnitude is not None and np.isfinite(magnitude):
+                    metric_values[metric].append(float(magnitude))
+
         results= {}
-        for metric, values in metric_values.items():
-            print(metric_values)
-            print(values)
-            
+        for metric, values in metric_values.items():            
             drift={
                 "magnitude":        float(np.mean(values[metric])) if values[metric] else np.nan,
                 "magnitude_min":    float(np.min(values[metric])) if values[metric] else np.nan,
