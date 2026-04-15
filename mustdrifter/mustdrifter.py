@@ -665,7 +665,7 @@ class MuSTDrifter:
 
     def report_drift_heatmap(self, dimension, metric, export=True, **kwargs):
         if self.report_drift_tables is None:
-            self._build_report_drift_tables()
+            self._build_report_drift_tables(**kwargs)
 
         titles_dimension = {
             "semantic": "Semantic Drift",
