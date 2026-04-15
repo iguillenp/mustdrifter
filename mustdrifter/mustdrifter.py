@@ -654,7 +654,7 @@ class MuSTDrifter:
         self.report_drift_tables = cleaned_tables
         return cleaned_tables
 
-    def report_drift_heatmap(self, dimension, metric, export=False):
+    def report_drift_heatmap(self, dimension, metric, export=True):
         if self.report_drift_tables is None:
             self._build_report_drift_tables()
 
@@ -692,7 +692,7 @@ class MuSTDrifter:
         plt.show()
         plt.close(fig)
     
-    def report_all_drift_heatmap(self, export=False):
+    def report_all_drift_heatmap(self, export=True):
         if self.report_drift_tables is None:
             self._build_report_drift_tables()
 
@@ -770,6 +770,5 @@ class MuSTDrifter:
             fig.save(str(output_path))
 
         plt.show(fig)
-        plt.close(fig)
         return fig
     ###
