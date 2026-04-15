@@ -698,12 +698,11 @@ class MuSTDrifter:
             filename= f"{self.report_path}/{self.df_name}_{dimension}_{metric}.svg"
             fig.savefig(filename, format="svg", bbox_inches="tight", pad_inches=0, transparent=True)
 
-        plt.show()
         plt.close(fig)
+        return fig
 
     def report_all_drift_heatmap(self, export=True, **kwargs):
-        if self.report_drift_tables is None:
-            self._build_report_drift_tables(**kwargs)
+        self._build_report_drift_tables(**kwargs)
 
         for dimension, metric_tables in self.report_drift_tables.items():
             for metric in metric_tables.keys():
