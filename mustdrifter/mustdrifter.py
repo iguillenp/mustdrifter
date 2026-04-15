@@ -538,7 +538,7 @@ class MuSTDrifter:
         dimensions=None,
         metrics=None,
         score_key="magnitude",
-        fill_diagonal=0.0,
+        fill_diagonal=np.nan,
         sort_periods=True,
     ):
         allowed_dimensions = {
@@ -693,4 +693,8 @@ class MuSTDrifter:
         plt.show()
         plt.close(fig)
     
+    def report_all_drifts(self, export=False):
+        for dimension, metric_tables in self.report_drift_tables.items():
+            for metric in metric_tables.keys():
+                self.report_drift_heatmap(dimension=dimension, metric=metric, export=export)
     ###
