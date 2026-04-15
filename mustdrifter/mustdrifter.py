@@ -665,40 +665,98 @@ class MuSTDrifter:
         self.report_drift_tables = cleaned_tables
         return cleaned_tables
 
-    def report_drift_heatmap(self, dimension, metric, export=True, **kwargs):
+    def report_drift_heatmap(
+        self,
+        dimension,
+        metric,
+        export=True,
+        period_labels=None,
+        **kwargs
+    ):
         if self.report_drift_tables is None:
             self._build_report_drift_tables(**kwargs)
 
         titles_dimension = {
             "semantic": "Semantic Drift",
             "syntactic_content": "Syntactic Content Drift",
-            "syntactic_style": "Syntactic Style Drift", 
+            "syntactic_style": "Syntactic Style Drift",
             "lexical": "Lexical Drift",
-            "thematic": "Thematic Drift"
+            "thematic": "Thematic Drift",
         }
-        
-        tiles_metrics= {
+
+        tiles_metrics = {
             "mmd": "Maximum Mean Discrepancy, MMD",
             "cos": "Cosine Distance",
             "kl": "Kullback–Leibler Divergence, KL",
             "js": "Jensen–Shannon Divergence, JS",
             "log": "Log-Likelihood",
-            "ks": "Kolmogorov–Smirnov Test, KS"
+            "ks": "Kolmogorov–Smirnov Test, KS",
         }
 
-        table= self.report_drift_tables[dimension][metric]
+        table = self.report_drift_tables[dimension][metric].copy()
+
+        if period_labels is not None:
+            if not period_labels:
+                self.logger.warning("The provided period_labels dictionary is empty.")
+                return None
+
+            sample_index = next(iter(table.index), None)
+
+            if sample_index is not None and isinstance(sample_index, str):
+                normalized_period_labels = {str(k): v for k, v in period_labels.items()}
+            else:
+                normalized_period_labels = dict(period_labels)
+
+            ordered_keys = [key for key in normalized_period_labels if key in table.index]
+
+            table = table.loc[
+                table.index.intersection(ordered_keys),
+                table.columns.intersection(ordered_keys),
+            ]
+
+            table = table.loc[ordered_keys, ordered_keys]
+
+            if table.empty:
+                self.logger.warning(
+                    f"Empty table after filtering with period_labels for "
+                    f"dimension='{dimension}', metric='{metric}'."
+                )
+                return None
+
+            table = table.rename(
+                index=normalized_period_labels,
+                columns=normalized_period_labels,
+            )
+
         abs_table = table.abs()
 
         fig, ax = plt.subplots(figsize=(8, 6))
 
-        title= "Absolute Values of " + titles_dimension[dimension]+ " (" + tiles_metrics[metric] + ") Across Periods"
+        title = (
+            "Absolute Values of "
+            + titles_dimension[dimension]
+            + " ("
+            + tiles_metrics[metric]
+            + ") Across Periods"
+        )
         ax.set_title(title)
-        
+
         sns.heatmap(abs_table, annot=True, cmap="RdYlGn_r", fmt=".3f", ax=ax)
+
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
+
         fig.tight_layout()
+
         if export:
-            filename= f"{self.report_path}/{self.df_name}_{dimension}_{metric}.svg"
-            fig.savefig(filename, format="svg", bbox_inches="tight", pad_inches=0, transparent=True)
+            filename = f"{self.report_path}/{self.df_name}_{dimension}_{metric}.svg"
+            fig.savefig(
+                filename,
+                format="svg",
+                bbox_inches="tight",
+                pad_inches=0,
+                transparent=True,
+            )
 
         plt.close(fig)
         return fig
