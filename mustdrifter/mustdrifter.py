@@ -115,7 +115,7 @@ class MuSTDrifter:
                     raise ValueError("POS annotations error.")
         return True
     ###
-    
+
     ### Exporter
     def _export_dimension_annotations(self, df, filename_path):
         columns = [c for c in df.columns if c != "period_id"]
@@ -184,7 +184,6 @@ class MuSTDrifter:
     ###
     
     ### Drift Loaders
-    
     def load_syntax_content_drift(self, reference_period, test_period, metric):
         _path = f"{self.syntax_content_drift_path}/{reference_period}_{test_period}_{metric}.json"
         self.logger.debug(f"Syntax content drift loaded from {_path}")
@@ -296,7 +295,6 @@ class MuSTDrifter:
         if "thematic" in dimensions:
             self.generate_thematic_dimension(**kwargs)
             self.logger.debug("Thematic dimension generated and exported.")
-
     ###
 
     ### Drift calculation
@@ -531,15 +529,20 @@ class MuSTDrifter:
 
         self.logger.info("Drift calculation completed for all period pairs.")
     ###
-    
+
     ### Report  
     def _build_report_drift_tables(
         self,
         dimensions=None,
         metrics=None,
-        score_key="magnitude",
+        semantic_score_key="magnitude",
+        syntactic_content_score_key="magnitude",
+        syntactic_style_score_key="magnitude",
+        lexical_score_key="magnitude",
+        thematic_score_key="magnitude",
         fill_diagonal=np.nan,
         sort_periods=True,
+        **kwargs
     ):
         allowed_dimensions = {
             "semantic": self.load_semantic_drift,
@@ -547,6 +550,14 @@ class MuSTDrifter:
             "syntactic_style": self.load_syntax_style_drift,
             "lexical": self.load_lexical_drift,
             "thematic": self.load_thematic_drift,
+        }
+        
+        score_keys_mapping = {
+            "semantic": semantic_score_key,
+            "syntactic_content": syntactic_content_score_key,
+            "syntactic_style": syntactic_style_score_key,
+            "lexical": lexical_score_key,
+            "thematic": thematic_score_key,
         }
 
         if dimensions is None:
@@ -599,10 +610,10 @@ class MuSTDrifter:
                         if drift_data is None:
                             continue
 
-                        score = drift_data.get(score_key)
+                        score = drift_data.get(score_keys_mapping[dimension])
                         if score is None:
                             self.logger.warning(
-                                f"Score key '{score_key}' not found for "
+                                f"Score key '{score_keys_mapping[dimension]}' not found for "
                                 f"{dimension} drift ({reference_period} -> {test_period}, metric={metric})"
                             )
                             continue
@@ -648,13 +659,11 @@ class MuSTDrifter:
             if cleaned_metric_tables:
                 cleaned_tables[dimension] = cleaned_metric_tables
             else:
-                self.logger.info(
-                    f"Removing dimension '{dimension}' because all metric tables are empty"
-                )
+                self.logger.info(f"Removing dimension '{dimension}' because all metric tables are empty")
         self.report_drift_tables = cleaned_tables
         return cleaned_tables
 
-    def report_drift_heatmap(self, dimension, metric, export=True):
+    def report_drift_heatmap(self, dimension, metric, export=True, **kwargs):
         if self.report_drift_tables is None:
             self._build_report_drift_tables()
 
@@ -691,14 +700,14 @@ class MuSTDrifter:
 
         plt.show()
         plt.close(fig)
-    
-    def report_all_drift_heatmap(self, export=True):
+
+    def report_all_drift_heatmap(self, export=True, **kwargs):
         if self.report_drift_tables is None:
-            self._build_report_drift_tables()
+            self._build_report_drift_tables(**kwargs)
 
         for dimension, metric_tables in self.report_drift_tables.items():
             for metric in metric_tables.keys():
-                self.report_drift_heatmap(dimension=dimension, metric=metric, export=export)
+                self.report_drift_heatmap(dimension=dimension, metric=metric, export=export, **kwargs)
 
     def report_group_all_drift_heatmap(self, export=True):
         structure = {
