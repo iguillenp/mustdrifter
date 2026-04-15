@@ -769,6 +769,5 @@ class MuSTDrifter:
         if export:
             fig.save(str(output_path))
 
-        plt.show(fig)
         return fig
     ###
