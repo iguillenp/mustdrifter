@@ -542,6 +542,7 @@ class MuSTDrifter:
         thematic_score_key="magnitude",
         fill_diagonal=np.nan,
         sort_periods=True,
+        periods=None,
         **kwargs
     ):
         allowed_dimensions = {
@@ -573,7 +574,8 @@ class MuSTDrifter:
         if metrics is None:
             metrics = ["mmd", "cos", "ks", "kl", "js", "log"]
 
-        periods = self.df["period_id"].dropna().unique().tolist()
+        if periods is None:
+            periods = self.df["period_id"].dropna().unique().tolist()
 
         if sort_periods:
             periods = sorted(periods, key=lambda x: int(x))
