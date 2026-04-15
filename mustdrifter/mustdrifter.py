@@ -685,12 +685,12 @@ class MuSTDrifter:
         }
 
         tiles_metrics = {
-            "mmd": "Maximum Mean Discrepancy, MMD",
-            "cos": "Cosine Distance",
-            "kl": "Kullback–Leibler Divergence, KL",
-            "js": "Jensen–Shannon Divergence, JS",
+            "mmd": "Maximum Mean Discrepancy",
+            "cos": "Cosine Drift",
+            "kl": "Kullback–Leibler Divergence",
+            "js": "Jensen–Shannon Divergence",
             "log": "Log-Likelihood",
-            "ks": "Kolmogorov–Smirnov Test, KS",
+            "ks": "Kolmogorov–Smirnov Test",
         }
 
         table = self.report_drift_tables[dimension][metric].copy()
@@ -732,14 +732,8 @@ class MuSTDrifter:
 
         fig, ax = plt.subplots(figsize=(8, 6))
 
-        title = (
-            "Absolute Values of "
-            + titles_dimension[dimension]
-            + " ("
-            + tiles_metrics[metric]
-            + ") Across Periods"
-        )
-        ax.set_title(title)
+        title = (tiles_metrics[metric])
+        ax.set_title(title, fontsize=16, weight="bold")
 
         sns.heatmap(abs_table, annot=True, cmap="RdYlGn_r", fmt=".3f", ax=ax)
 
