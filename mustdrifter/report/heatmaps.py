@@ -99,6 +99,7 @@ def generate_magnitude_heatmaps(
     figsize=(8, 6),
     cmap="RdYlGn_r",
     fmt=".3f",
+    title="",
     **kwargs
 ):
     titles_dimension = {
@@ -123,10 +124,11 @@ def generate_magnitude_heatmaps(
     # Caso 1: una sola tabla (aggregate_by="dimension")
     if isinstance(meta_tables, pd.DataFrame):
         table = _apply_period_labels(meta_tables, period_labels, logger)
-
+        if title == "":
+            title = "Meta-Magnitude"
         fig = _plot_heatmap(
             table=table,
-            title="Meta-Magnitude",
+            title=title,
             export=export,
             filename=f"{base_filename}.svg",
             figsize=figsize,
@@ -152,10 +154,13 @@ def generate_magnitude_heatmaps(
             if labeled_table is None or labeled_table.empty:
                 logger.warning(f"Empty table for dimension='{dimension}'.")
                 continue
+            
+            if title == "":
+                title = titles_dimension.get(dimension, str(dimension))
 
             fig = _plot_heatmap(
                 table=labeled_table,
-                title=titles_dimension.get(dimension, str(dimension)),
+                title=title,
                 export=export,
                 filename=f"{base_filename}_{dimension}.svg",
                 figsize=figsize,
@@ -183,7 +188,9 @@ def generate_magnitude_heatmaps(
                         f"Empty table for dimension='{dimension}', metric='{metric}'."
                     )
                     continue
-
+                if title == "":
+                    title = tiles_metrics.get(metric, str(metric))
+                
                 fig = _plot_heatmap(
                     table=labeled_table,
                     title=tiles_metrics.get(metric, str(metric)),
