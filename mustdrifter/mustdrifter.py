@@ -807,7 +807,7 @@ class MuSTDrifter:
                     dim_titles.get(dimension, dimension),
                     row_width / 2,
                     y_title + title_h / 2,
-                    size=24,
+                    size=16,
                     weight="bold",
                     anchor="middle",
                 )
