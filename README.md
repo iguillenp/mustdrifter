@@ -10,37 +10,10 @@ By combining **covariate shift** and **prior probability shift** detection, MuST
 MuSTDrifter models discourse evolution through two complementary forms of distribution shift:
 
 ### Covariate Shift
-
-For semantic, lexical, and syntactic dimensions, discourse change is modeled as shifts in
-
-\[
-P_t(x)
-\]
-
-assuming relative stability in
-
-\[
-P_t(y \mid x)
-\]
-
-capturing changes in observed linguistic feature distributions over time.
-
+For semantic, lexical, and syntactic dimensions, discourse change is modeled as shifts in **Pₜ(x)**, assuming relative stability in **Pₜ(y|x)**. This captures changes in observed linguistic feature distributions over time.
 
 ### Prior Probability Shift
-
-For the thematic dimension, discourse change is modeled as shifts in
-
-\[
-P_t(y)
-\]
-
-assuming relative stability in
-
-\[
-P_t(x \mid y)
-\]
-
-capturing variation in the prior distribution of latent themes across temporal periods.
+For the thematic dimension, discourse change is modeled as shifts in **Pₜ(y)**, assuming relative stability in **Pₜ(x|y)**. This captures variation in the prior distribution of latent themes across temporal periods.
 
 ---
 
