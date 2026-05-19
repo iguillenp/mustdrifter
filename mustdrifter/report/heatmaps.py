@@ -270,7 +270,7 @@ def plot_aggregated_dimension_values_heatmap(
     fig = plt.figure(figsize=figsize)
 
     ax = fig.add_axes([0.06, 0.16, 0.78, 0.68])
-    cax = fig.add_axes([0.758, 0.53, 0.022, 0.30])
+    cax = fig.add_axes([0.86, 0.53, 0.015, 0.28])
 
     ax.set_xlim(0, n_periods)
     ax.set_ylim(0, n_periods)
