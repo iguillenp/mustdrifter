@@ -293,15 +293,9 @@ def plot_aggregated_dimension_values_heatmap(
     inner_gap_y = 0.12
     inner_gap_x = 0.006
 
-    inner_width = (
-        1 - 2 * cell_padding_x - (inner_cols - 1) * inner_gap_x
-    ) / inner_cols
-
-    inner_height = (
-        1 - 2 * cell_padding_y - (inner_rows - 1) * inner_gap_y
-    ) / inner_rows
-
-    inner_height *= 0.72
+    inner_width = 1 - 2 * cell_padding_x
+    slot_height = (1 - 2 * cell_padding_y - (inner_rows - 1) * inner_gap_y) / inner_rows
+    inner_height = slot_height * 0.75
     
     def format_value(value):
         return f"{value:.2f}".replace("0.", ".")
@@ -331,26 +325,17 @@ def plot_aggregated_dimension_values_heatmap(
                 continue
 
             for dim_idx, dimension in enumerate(dimensions_order):
-                grid_col, grid_row = inner_positions[dim_idx]
-
                 value = tables[dimension].loc[reference_period, test_period]
 
-                x = (
-                    col_idx
-                    + cell_padding_x
-                    + grid_col * (inner_width + inner_gap_x)
-                )
-                base_y = (
+                x = col_idx + cell_padding_x
+
+                slot_y = (
                     row_idx
                     + cell_padding_y
-                    + grid_row * (
-                        (1 - 2 * cell_padding_y) / inner_rows
-                    )
+                    + dim_idx * (slot_height + inner_gap_y)
                 )
 
-                y = base_y + (
-                    ((1 - 2 * cell_padding_y) / inner_rows) - inner_height
-                ) / 2
+                y = slot_y + (slot_height - inner_height) / 2
 
                 color = "lightgray" if np.isnan(value) else cmap(norm(value))
 
@@ -368,19 +353,15 @@ def plot_aggregated_dimension_values_heatmap(
                 short_name = dimension_short_names.get(dimension, dimension)
 
                 if np.isnan(value):
-                    text_color = "black"
                     combined_text = short_name
+                    text_color = "black"
                 else:
-                    text_color = (
-                            "white"
-                            if (value >= 0.85 or value <= 0.15)
-                            else "black"
-                        )
                     combined_text = (
                         f"{short_name}: {format_value(value)}"
                         if show_values
                         else short_name
                     )
+                    text_color = "white" if (value >= 0.82 or value <= 0.12) else "black"
 
                 ax.text(
                     x + inner_width / 2,
@@ -391,7 +372,6 @@ def plot_aggregated_dimension_values_heatmap(
                     fontsize=10,
                     fontweight="bold",
                     color=text_color,
-                    linespacing=1.15,
                 )
 
     ax.set_xticks(np.arange(n_periods) + 0.5)
