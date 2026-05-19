@@ -279,18 +279,18 @@ def plot_aggregated_dimension_values_heatmap(
 
     inner_positions = {
         0: (0, 0),
-        1: (1, 0),
-        2: (2, 0),
-        3: (3, 0),
-        4: (4, 0),
+        1: (0, 1),
+        2: (0, 2),
+        3: (0, 3),
+        4: (0, 4),
     }
 
     inner_cols = len(dimensions_order)
     inner_rows = 1
 
-    cell_padding_x = 0.02
-    cell_padding_y = 0.18
-    inner_gap_y = 0.    
+    cell_padding_x = 0.06
+    cell_padding_y = 0.06
+    inner_gap_y = 0.12
     inner_gap_x = 0.006
 
     inner_width = (
@@ -301,6 +301,8 @@ def plot_aggregated_dimension_values_heatmap(
         1 - 2 * cell_padding_y - (inner_rows - 1) * inner_gap_y
     ) / inner_rows
 
+    inner_height *= 0.72
+    
     def format_value(value):
         return f"{value:.2f}".replace("0.", ".")
 
@@ -338,11 +340,17 @@ def plot_aggregated_dimension_values_heatmap(
                     + cell_padding_x
                     + grid_col * (inner_width + inner_gap_x)
                 )
-                y = (
+                base_y = (
                     row_idx
                     + cell_padding_y
-                    + grid_row * (inner_height + inner_gap_y)
+                    + grid_row * (
+                        (1 - 2 * cell_padding_y) / inner_rows
+                    )
                 )
+
+                y = base_y + (
+                    ((1 - 2 * cell_padding_y) / inner_rows) - inner_height
+                ) / 2
 
                 color = "lightgray" if np.isnan(value) else cmap(norm(value))
 
