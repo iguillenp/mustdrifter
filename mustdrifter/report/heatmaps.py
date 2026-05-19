@@ -285,8 +285,8 @@ def plot_aggregated_dimension_values_heatmap(
         4: (0, 4),
     }
 
-    inner_cols = len(dimensions_order)
-    inner_rows = 1
+    inner_cols = 1
+    inner_rows = len(dimensions_order)
 
     cell_padding_x = 0.06
     cell_padding_y = 0.06
