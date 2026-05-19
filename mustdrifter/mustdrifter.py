@@ -17,7 +17,7 @@ from .preprocessing import get_lexical_distribution, get_syntactic_content_distr
 
 from .drift import cos_drift, ks_drift, mmd_drift, js_drift, kl_drift, log_likelihood_drift
 
-from .report import get_drift_tables, generate_magnitude_heatmaps
+from .report import get_drift_tables, generate_magnitude_heatmaps, plot_aggregated_dimension_values_heatmap
 
 class MuSTDrifter:
     """ Multi-Source Temporal Drifter 
@@ -861,3 +861,27 @@ class MuSTDrifter:
         )
         
         generate_magnitude_heatmaps(tables, base_filename=f"{self.report_path}/{self.df_name}", export=export, **kwargs)
+        
+        
+    def report_aggregated_heatmap(self, periods=None, export=True, aggregate_by="metric", **kwargs):
+        if periods is None:
+            periods = self.df["period_id"].dropna().unique().tolist()
+            
+        dimension_drift_loaders = {
+            "semantic": self.load_semantic_drift,
+            "syntactic_content": self.load_syntax_content_drift,
+            "syntactic_style": self.load_syntax_style_drift,
+            "lexical": self.load_lexical_drift,
+            "thematic": self.load_thematic_drift,
+        }
+        
+        tables= get_drift_tables(
+            dimension_drift_loaders,
+            periods=periods,
+            aggregate_by=aggregate_by,
+            **kwargs,
+        )
+        
+        plot_aggregated_dimension_values_heatmap(tables, base_filename=f"{self.report_path}/{self.df_name}_aggregated_dimensions.svg", export=export, **kwargs)
+        
+        

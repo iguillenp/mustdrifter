@@ -6,6 +6,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
+import numpy as np
+import matplotlib.cm as cm
+from matplotlib.patches import Rectangle
+from matplotlib.colors import Normalize
+
+
 def _apply_period_labels(table, period_labels, logger=None):
     table = table.copy()
 
@@ -211,3 +218,212 @@ def generate_magnitude_heatmaps(
 
     logger.warning("Unsupported meta_tables structure.")
     return None
+
+
+def plot_aggregated_dimension_values_heatmap(
+    tables,
+    period_labels=None,
+    dimensions_order=None,
+    dimension_labels=None,
+    dimension_short_names=None,
+    title="Multidimensional discourse drift by dimension",
+    cmap_name="RdYlGn_r",
+    figsize=(14, 12),
+    filename=None,
+    show_values=True,
+    export= False,
+    **kwargs
+):
+    if dimensions_order is None:
+        dimensions_order = list(tables.keys())
+
+    if dimension_labels is None:
+        dimension_labels = {
+            "semantic": "Semantic",
+            "syntactic_content": "Syntactic Content",
+            "syntactic_style": "Syntactic Style",
+            "lexical": "Lexical",
+            "thematic": "Thematic",
+        }
+
+    if dimension_short_names is None:
+        dimension_short_names = {
+            "semantic": "S",
+            "syntactic_content": "SC",
+            "syntactic_style": "SS",
+            "lexical": "L",
+            "thematic": "T",
+        }
+
+    first_table = tables[dimensions_order[0]]
+    periods = list(first_table.index)
+    n_periods = len(periods)
+
+    labels = [
+        period_labels.get(period, str(period)) if period_labels else str(period)
+        for period in periods
+    ]
+
+    cmap = cm.get_cmap(cmap_name)
+    norm = Normalize(vmin=0, vmax=1)
+
+    fig = plt.figure(figsize=figsize)
+
+    ax = fig.add_axes([0.08, 0.10, 0.68, 0.78])
+    cax = fig.add_axes([0.758, 0.53, 0.022, 0.30])
+
+    ax.set_xlim(0, n_periods)
+    ax.set_ylim(0, n_periods)
+    ax.invert_yaxis()
+    ax.set_aspect("equal")
+
+    inner_positions = {
+        0: (0, 0),
+        1: (1, 0),
+        2: (2, 0),
+        3: (0, 1),
+        4: (1, 1),
+        5: (2, 1),
+    }
+
+    inner_cols = 3
+    inner_rows = 2
+
+    cell_padding_x = 0.08
+    cell_padding_y = 0.10
+    inner_gap_x = 0.018
+    inner_gap_y = 0.035
+
+    inner_width = (
+        1 - 2 * cell_padding_x - (inner_cols - 1) * inner_gap_x
+    ) / inner_cols
+
+    inner_height = (
+        1 - 2 * cell_padding_y - (inner_rows - 1) * inner_gap_y
+    ) / inner_rows
+
+    def format_value(value):
+        return f"{value:.2f}".replace("0.", ".")
+
+    for row_idx, reference_period in enumerate(periods):
+        for col_idx, test_period in enumerate(periods):
+            ax.add_patch(
+                Rectangle(
+                    (col_idx, row_idx),
+                    1,
+                    1,
+                    facecolor="white",
+                    edgecolor="0.65",
+                    linewidth=0.7,
+                )
+            )
+
+            if reference_period == test_period:
+                ax.text(
+                    col_idx + 0.5,
+                    row_idx + 0.5,
+                    "—",
+                    ha="center",
+                    va="center",
+                    fontsize=12,
+                )
+                continue
+
+            for dim_idx, dimension in enumerate(dimensions_order):
+                grid_col, grid_row = inner_positions[dim_idx]
+
+                value = tables[dimension].loc[reference_period, test_period]
+
+                x = (
+                    col_idx
+                    + cell_padding_x
+                    + grid_col * (inner_width + inner_gap_x)
+                )
+                y = (
+                    row_idx
+                    + cell_padding_y
+                    + grid_row * (inner_height + inner_gap_y)
+                )
+
+                color = "lightgray" if np.isnan(value) else cmap(norm(value))
+
+                ax.add_patch(
+                    Rectangle(
+                        (x, y),
+                        inner_width,
+                        inner_height,
+                        facecolor=color,
+                        edgecolor="0.85",
+                        linewidth=0.35,
+                    )
+                )
+
+                short_name = dimension_short_names.get(dimension, dimension)
+
+                if np.isnan(value):
+                    text_color = "black"
+                    combined_text = short_name
+                else:
+                    text_color = "white" if value >= 0.55 else "black"
+                    combined_text = (
+                        f"{short_name}\n{format_value(value)}"
+                        if show_values
+                        else short_name
+                    )
+
+                ax.text(
+                    x + inner_width / 2,
+                    y + inner_height / 2,
+                    combined_text,
+                    ha="center",
+                    va="center",
+                    fontsize=7.2,
+                    fontweight="bold",
+                    color=text_color,
+                    linespacing=1.15,
+                )
+
+    ax.set_xticks(np.arange(n_periods) + 0.5)
+    ax.set_yticks(np.arange(n_periods) + 0.5)
+    ax.set_xticklabels(labels, rotation=45, ha="right", fontsize=10)
+    ax.set_yticklabels(labels, fontsize=10)
+
+    ax.tick_params(length=0)
+    ax.set_title(title, fontsize=16, fontweight="bold", pad=18)
+
+    colorbar = fig.colorbar(
+        cm.ScalarMappable(norm=norm, cmap=cmap),
+        cax=cax,
+    )
+    colorbar.set_label("Normalized drift score", rotation=270, labelpad=18)
+
+    legend_lines = [
+        f"{dimension_short_names.get(dim, dim)}  {dimension_labels.get(dim, dim)}"
+        for dim in dimensions_order
+    ]
+
+    ax.text(
+        1.01,
+        0.47,
+        "Dimensions\n\n" + "\n".join(legend_lines),
+        transform=ax.transAxes,
+        va="top",
+        fontsize=9.5,
+        linespacing=1.5,
+        bbox=dict(
+            boxstyle="round,pad=0.4",
+            facecolor="white",
+            edgecolor="0.75",
+        ),
+    )
+
+    if export and filename is not None:
+        plt.savefig(
+            filename,
+            format="svg",
+            bbox_inches="tight",
+            pad_inches=0,
+            transparent=True,
+        )
+
+    return fig, ax

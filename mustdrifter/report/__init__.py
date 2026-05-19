@@ -1,2 +1,2 @@
-from .heatmaps import generate_magnitude_heatmaps
+from .heatmaps import generate_magnitude_heatmaps, plot_aggregated_dimension_values_heatmap
 from .tables import get_drift_tables
