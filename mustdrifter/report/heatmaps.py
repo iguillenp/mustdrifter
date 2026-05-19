@@ -290,12 +290,12 @@ def plot_aggregated_dimension_values_heatmap(
 
     cell_padding_x = 0.06
     cell_padding_y = 0.06
-    inner_gap_y = 0.12
+    inner_gap_y = 0.002
     inner_gap_x = 0.006
 
     inner_width = 1 - 2 * cell_padding_x
     slot_height = (1 - 2 * cell_padding_y - (inner_rows - 1) * inner_gap_y) / inner_rows
-    inner_height = slot_height * 0.75
+    inner_height = slot_height
     
     def format_value(value):
         return f"{value:.2f}".replace("0.", ".")
